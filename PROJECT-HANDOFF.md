@@ -155,6 +155,10 @@ SQLite 使用 WAL 模式。在线备份应使用 SQLite 的备份命令或先短
 ## 10. 当前待完成
 
 - GitHub 仓库已设为私有，远端 `main` 已于 2026-07-27 用 v3 无父提交替换，当前分支历史不再包含旧版付费文件。
-- 腾讯云部署尚未执行，需要 SSH 或 WebShell 连接。
-- Stripe 真实密钥轮换和新 webhook endpoint 尚未执行。
-- 旧 `tracking.json` 如需保留，可在部署时单独归档；新版本不再依赖它。
+- v3 已于 2026-07-27 部署到腾讯云 Lighthouse，`digital-shop` 已由 systemd 托管并设为开机自启，Node.js 只监听 `127.0.0.1:3000`，Caddy HTTPS 转发正常。
+- 旧站完整备份位于 `/home/ubuntu/digital-products/store-backup-before-v3`，切换前的旧运行目录位于 `/home/ubuntu/digital-products/store-legacy-before-v3-live`。
+- `/etc/digital-shop.env` 权限为 `600`；后台随机密码保存在服务器 root 专用文件 `/root/digital-shop-admin-password.txt`，不得写入仓库或聊天。
+- Stripe 生产 webhook 已创建并启用，订阅本文件第 6 节列出的 4 个事件；生产 Checkout 会话创建测试已通过。
+- 当前部署临时沿用了旧版 Stripe Live Secret key。该密钥曾经公开，仍须在 Stripe Dashboard 中轮换；轮换后应立即更新 `/etc/digital-shop.env` 并重启、复核 `digital-shop`。
+- 真实付款、下载次数限制、退款撤权和重启后持久化仍需使用一笔实际订单完成端到端验收。
+- 旧 `tracking.json` 已随旧站目录保留；新版本不再依赖它。
