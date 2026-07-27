@@ -62,8 +62,6 @@
     <div class="toast" id="toast"></div>
     
     <script>
-        const STRIPE_PK = 'pk_live_YOUR_STRIPE_PUBLISHABLE_KEY';
-        
         const products = [
             {
                 priceId: 'price_1Twab9PYKu4xpUEiRoAtvScJ',
@@ -126,13 +124,12 @@
                 <div class="desc">${p.desc}</div>
                 <div class="features">${p.features.map(f => `<span>${f}</span>`).join('')}</div>
                 <div class="price">${p.price} <span>one-time</span></div>
-                <button class="buy-btn" onclick="checkout('${p.priceId}')">Buy Now</button>
+                <button class="buy-btn" onclick="checkout('${p.priceId}', this)">Buy Now</button>
             `;
             grid.appendChild(card);
         });
         
-        async function checkout(priceId) {
-            const btn = event.target;
+        async function checkout(priceId, btn) {
             btn.disabled = true;
             btn.textContent = 'Redirecting...';
             
