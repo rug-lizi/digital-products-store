@@ -154,7 +154,7 @@ SQLite 使用 WAL 模式。在线备份应使用 SQLite 的备份命令或先短
 
 ## 10. 当前待完成
 
-- 远端 GitHub 历史清理尚未执行。
+- GitHub 仓库已设为私有，远端 `main` 已于 2026-07-27 用 v3 无父提交替换，当前分支历史不再包含旧版付费文件。
 - 腾讯云部署尚未执行，需要 SSH 或 WebShell 连接。
 - Stripe 真实密钥轮换和新 webhook endpoint 尚未执行。
 - 旧 `tracking.json` 如需保留，可在部署时单独归档；新版本不再依赖它。
