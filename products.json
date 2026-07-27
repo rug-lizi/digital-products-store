@@ -1,0 +1,52 @@
+{
+  "products": [
+    {
+      "priceId": "price_1Twab9PYKu4xpUEiRoAtvScJ",
+      "name": "100+ ChatGPT Prompts for Ultimate Productivity",
+      "price": 999,
+      "icon": "📝",
+      "file": "01-chatgpt-prompt-pack/ChatGPT-Prompts-Pack.txt",
+      "downloadName": "ChatGPT-Prompts-Pack.txt"
+    },
+    {
+      "priceId": "price_1Twab9PYKu4xpUEiSneZ9NS9",
+      "name": "Python Automation Scripts Toolkit",
+      "price": 1999,
+      "icon": "🔧",
+      "file": "02-python-automation-toolkit/Python-Automation-Toolkit.zip",
+      "downloadName": "Python-Automation-Toolkit.zip"
+    },
+    {
+      "priceId": "price_1Twab9PYKu4xpUEiikoiIE2E",
+      "name": "50 SEO Blog Post Templates",
+      "price": 999,
+      "icon": "📋",
+      "file": "05-seo-blog-post-templates/SEO-Blog-Post-Templates.txt",
+      "downloadName": "SEO-Blog-Post-Templates.txt"
+    },
+    {
+      "priceId": "price_1TwabAPYKu4xpUEiDeng8Yyr",
+      "name": "100+ Midjourney Prompts for Marketing",
+      "price": 799,
+      "icon": "🎨",
+      "file": "07-midjourney-marketing-prompts/Midjourney-Marketing-Prompts.txt",
+      "downloadName": "Midjourney-Marketing-Prompts.txt"
+    },
+    {
+      "priceId": "price_1TwabAPYKu4xpUEiAJYpoEC2",
+      "name": "Data Analysis Excel Template Pack",
+      "price": 1499,
+      "icon": "📊",
+      "file": "09-excel-data-analysis/templates-pack.md",
+      "downloadName": "Excel-Data-Analysis-Templates.md"
+    },
+    {
+      "priceId": "price_1TwabBPYKu4xpUEikNb8z60M",
+      "name": "The Ultimate AI Side Hustle Guide",
+      "price": 1499,
+      "icon": "🤖",
+      "file": "10-ai-side-hustle-guide/AI-Side-Hustle-Guide.md",
+      "downloadName": "AI-Side-Hustle-Guide.md"
+    }
+  ]
+}

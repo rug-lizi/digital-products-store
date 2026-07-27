@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adam Li Digital — Premium Digital Products</title>
+    <meta name="description" content="Battle-tested ChatGPT prompts, Python automation scripts, SEO templates, Midjourney prompts, and AI side hustle guides. Instant download.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e5e5e5; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        /* Header */
+        header { padding: 60px 0 40px; text-align: center; }
+        header h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+        header p { font-size: 1.1rem; color: #999; max-width: 600px; margin: 0 auto; }
+        .badge { display: inline-block; background: #1a1a2e; color: #a855f7; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 16px; border: 1px solid #2a2a4e; }
+        
+        /* Product Grid */
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; padding: 20px 0 60px; }
+        .card { background: #141414; border: 1px solid #262626; border-radius: 16px; padding: 28px; transition: transform 0.2s, border-color 0.2s; }
+        .card:hover { transform: translateY(-4px); border-color: #6366f1; }
+        .card .icon { font-size: 2.2rem; margin-bottom: 12px; }
+        .card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        .card .desc { font-size: 0.88rem; color: #888; margin-bottom: 16px; min-height: 60px; }
+        .card .features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+        .card .features span { background: #1a1a2e; color: #a855f7; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; }
+        .card .price { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 16px; }
+        .card .price span { font-size: 0.85rem; color: #666; font-weight: 400; }
+        .buy-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+        .buy-btn:hover { opacity: 0.9; }
+        .buy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Footer */
+        footer { text-align: center; padding: 40px 0; color: #555; font-size: 0.8rem; border-top: 1px solid #1a1a1a; }
+        footer a { color: #6366f1; text-decoration: none; }
+        
+        /* Toast */
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1a1a2e; color: #a855f7; padding: 12px 24px; border-radius: 10px; font-size: 0.9rem; z-index: 1000; display: none; border: 1px solid #2a2a4e; }
+        
+        @media (max-width: 700px) {
+            header h1 { font-size: 1.8rem; }
+            .products { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="badge">⚡ Instant Download</div>
+            <h1>Adam Li Digital</h1>
+            <p>Premium digital products to boost your productivity, automate your workflow, and make money with AI.</p>
+        </header>
+        
+        <div class="products" id="products"></div>
+        
+        <footer>
+            <p>Secure payments via Stripe · Instant download after purchase · Questions? <a href="mailto:your-email@example.com">your-email@example.com</a></p>
+        </footer>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        const STRIPE_PK = 'pk_live_YOUR_STRIPE_PUBLISHABLE_KEY';
+        
+        const products = [
+            {
+                priceId: 'price_1Twab9PYKu4xpUEiRoAtvScJ',
+                name: '100+ ChatGPT Prompts for Ultimate Productivity',
+                price: '$9.99',
+                icon: '📝',
+                desc: '103 battle-tested prompts for content writing, business, marketing, productivity & more. 7 categories, copy-paste ready.',
+                features: ['103 prompts', '7 categories', 'Copy-paste ready', 'Lifetime access']
+            },
+            {
+                priceId: 'price_1Twab9PYKu4xpUEiSneZ9NS9',
+                name: 'Python Automation Scripts Toolkit',
+                price: '$19.99',
+                icon: '🔧',
+                desc: '20 ready-to-use Python scripts for web scraping, data processing, email automation & more. Full source code.',
+                features: ['20 scripts', 'Full source code', 'Usage examples', 'Lifetime access']
+            },
+            {
+                priceId: 'price_1Twab9PYKu4xpUEiikoiIE2E',
+                name: '50 SEO Blog Post Templates',
+                price: '$9.99',
+                icon: '📋',
+                desc: '50 blog post templates with built-in SEO structure. How-tos, listicles, reviews, case studies & more.',
+                features: ['50 templates', '9 categories', 'SEO optimized', 'Lifetime access']
+            },
+            {
+                priceId: 'price_1TwabAPYKu4xpUEiDeng8Yyr',
+                name: '100+ Midjourney Prompts for Marketing',
+                price: '$7.99',
+                icon: '🎨',
+                desc: '111 marketing-focused Midjourney prompts for social media, product photography, brand identity & ad creatives.',
+                features: ['111 prompts', '10 categories', 'Marketing focused', 'Lifetime access']
+            },
+            {
+                priceId: 'price_1TwabAPYKu4xpUEiAJYpoEC2',
+                name: 'Data Analysis Excel Template Pack',
+                price: '$14.99',
+                icon: '📊',
+                desc: '8 professional Excel templates with built-in formulas for revenue tracking, KPI dashboards & budget planning.',
+                features: ['8 templates', 'Built-in formulas', 'Charts included', 'Lifetime access']
+            },
+            {
+                priceId: 'price_1TwabBPYKu4xpUEikNb8z60M',
+                name: 'The Ultimate AI Side Hustle Guide',
+                price: '$14.99',
+                icon: '🤖',
+                desc: '35 proven ways to make money with AI. Step-by-step instructions, realistic earnings & pitfalls to avoid.',
+                features: ['35 side hustles', 'Step-by-step', 'Realistic earnings', 'Lifetime access']
+            }
+        ];
+        
+        const grid = document.getElementById('products');
+        
+        products.forEach((p, i) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="icon">${p.icon}</div>
+                <h3>${p.name}</h3>
+                <div class="desc">${p.desc}</div>
+                <div class="features">${p.features.map(f => `<span>${f}</span>`).join('')}</div>
+                <div class="price">${p.price} <span>one-time</span></div>
+                <button class="buy-btn" onclick="checkout('${p.priceId}')">Buy Now</button>
+            `;
+            grid.appendChild(card);
+        });
+        
+        async function checkout(priceId) {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Redirecting...';
+            
+            try {
+                const response = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ priceId })
+                });
+                const session = await response.json();
+                
+                if (session.url) {
+                    window.location = session.url;
+                } else {
+                    throw new Error('No checkout URL');
+                }
+            } catch (err) {
+                showToast('Something went wrong. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Buy Now';
+            }
+        }
+        
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+shop.liyw.top {
+    tls {
+        key_type rsa2048
+    }
+
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:3000
+
+    log {
+        output file /var/log/caddy/shop-access.log
+        format json
+    }
+}

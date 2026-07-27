@@ -1,0 +1,16 @@
+node_modules/
+.env
+*.db
+*.db-shm
+*.db-wal
+tracking.json
+npm-debug.log*
+
+# Paid deliverables live outside the repository on the production server.
+products/**/*-Pack.txt
+products/**/*-Toolkit.zip
+products/**/prompts-pack.md
+products/**/scripts-pack.md
+products/**/templates-pack.md
+products/**/guide.md
+products/**/AI-Side-Hustle-Guide.md
