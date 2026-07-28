@@ -1,164 +1,112 @@
-# 数字产品商店交接文档
+# Digital Products Store 项目交接文档
 
-> 版本：v3 安全重构版
-> 更新时间：2026-07-27
-> 线上地址：https://shop.liyw.top
+> 更新时间：2026-07-28  
+> 当前版本：ChatGPT Sites 迁移版 v6  
+> GitHub：`rug-lizi/digital-products-store`（私有仓库，`main`）  
+> Sites 临时地址：https://digital-products-store.liywcsrc.chatgpt.site  
+> 正式域名：https://shop.liyw.top
 
-## 1. 固定架构
+## 1. 当前结论
 
-本项目继续使用“腾讯云轻量服务器＋Caddy＋Stripe＋自有域名”。本次没有迁移托管平台，重做的是登录、订单、webhook 和下载权限。
+商店程序和业务数据已经从腾讯云上海服务器迁入 ChatGPT Sites。新站已公开部署，后台登录、Stripe Checkout、webhook 拒绝伪造请求、订单数据和商品文件均已核验。
+
+整次迁移尚未完全收尾：`shop.liyw.top` 在 Sites 后台仍为 `pending`，HTTPS 状态为 `pending_validation`；腾讯云旧站也尚未清理。因此当前应把 Sites 临时地址视为已验收的新程序，把正式域名切换和腾讯云清理视为下一次继续处理的生产收尾。
+
+## 2. 当前架构
 
 ```text
 用户浏览器
-  → Caddy（80/443、HTTPS）
-  → Node.js（只监听 127.0.0.1:3000）
+  → ChatGPT Sites / Vinext
   → Stripe Checkout
-  → SQLite（订单、事件、会话、下载权限）
-  → 腾讯云非公开商品目录
+  → Stripe webhook
+  → D1：订单、webhook、访问事件、后台会话、下载授权、加密运行配置
+  → R2：6 个付费商品文件
 ```
 
-## 2. 四个核心的现状
+腾讯云时代的 Node 常驻进程、Caddy、systemd、SQLite 文件和服务器商品目录不再是新站架构的一部分。
 
-### 登录
+## 3. 已完成的迁移
 
-- 管理员密码只从 `/etc/digital-shop.env` 读取。
-- 登录成功后生成随机会话，数据库只保存 token 哈希。
-- 浏览器使用 `HttpOnly + Secure + SameSite=Strict` Cookie，JavaScript 无法读取。
-- 会话默认 8 小时，退出登录后立即撤销。
-- 单 IP 连续失败 5 次后冷却 15 分钟。
+- 新建并公开部署 Digital Products Store Sites 项目，当前为第 6 个生产版本。
+- 完成商店首页、后台、Checkout、webhook、订单状态、下载和退款撤权流程。
+- D1 已迁入：
+  - 订单 4 条；
+  - webhook 记录 0 条；
+  - 访问事件 12 条；
+  - 历史下载授权 0 条。
+- R2 已迁入 6 个付费商品文件，文件名和字节数已逐项对账。
+- 4 项运行密钥已迁入；它们使用 Sites 环境中的 `APP_SECRET` 加密保存于 D1。
+- 按用户决定，不保留旧版下载令牌，也不实现旧令牌兼容；未来付款只生成新版下载授权。
+- 一次性迁移入口、短期令牌、来源锁、临时明文、一次性私钥和中转密文均已删除。
+- 腾讯云上的加密中转文件已确认删除。
 
-### 订单
+## 4. 已完成的功能验收
 
-- 点击购买先生成 SQLite 待支付订单。
-- Stripe Session ID、Price ID、金额、币种、顾客邮箱和支付时间写入订单。
-- 只有 webhook 确认付款后，订单才变成 `paid`。
-- Stripe API 创建失败时订单标记为 `failed`。
+- 旧后台密码登录返回 401。
+- 迁移后的后台密码可以登录。
+- 后台 Cookie 已确认使用 `HttpOnly`、`Secure`、`SameSite=Strict`。
+- 退出登录后会话立即失效。
+- Stripe Checkout 可创建会话并跳转到 `checkout.stripe.com`。
+- 伪造 webhook 返回 400。
+- Stripe 后台目前只有一个启用的生产 endpoint：
+  `https://shop.liyw.top/api/webhook`
+- endpoint 订阅 4 个事件：
+  - `checkout.session.completed`
+  - `checkout.session.async_payment_succeeded`
+  - `checkout.session.async_payment_failed`
+  - `charge.refunded`
+- 6 个商品、4 条订单和 12 条访问事件的新旧数量一致。
 
-### Webhook
+上述检查没有产生实际扣款。真实付款、下载次数耗尽及退款后的端到端验收仍应在正式域名生效后用一笔真实订单完成。
 
-- 使用 Stripe 官方 Node SDK。
-- 必须验证原始请求体和 `Stripe-Signature`。
-- Stripe Event ID 在 SQLite 中唯一，重复通知不会重复计单。
-- 支持同步支付成功、异步支付成功、异步支付失败和退款。
-- 退款后订单标记为 `refunded`，现有下载权限立即撤销。
+## 5. 域名现状
 
-### 下载权限
+阿里云 DNS 已按 Sites 要求设置 `shop.liyw.top`：
 
-- 未付款订单没有下载资格。
-- 支付成功页凭 Stripe Session ID 查询本地订单状态。
-- 下载 token 的哈希、有效期、下载次数和上限保存在 SQLite。
-- 默认有效 72 小时、最多下载 5 次，可由环境变量修改。
-- Node.js 重启后订单与权限仍存在。
-- 文件以流方式发送，不公开真实服务器路径。
+- TXT：`_openai-site-verification.shop`
+- TXT：`_cf-custom-hostname.shop`
+- CNAME：`shop → custom-domains.chatgpt.site`
+- 原腾讯云 A 记录 `shop → 122.51.209.156` 已由用户删除。
 
-## 3. 重要安全边界
+截至 2026-07-28 最近一次平台核验：
 
-- GitHub 只保存代码、公开商品介绍和文件映射，不保存付费商品。
-- 6 个付费文件必须位于服务器 `PRODUCT_ROOT` 指向的非公开目录。
-- `.env`、数据库、访问统计、Stripe 密钥、webhook secret、后台密码不得进入 GitHub、聊天或交接文档。
-- 旧 GitHub 历史曾包含完整商品和敏感交接信息，发布 v3 前必须清理历史或更换为全新仓库。
-- 已公开过的商品内容应按“已泄露”处理；建议升级为新版后再正式销售。
+- 域名状态：`pending`
+- provider 状态：`pending`
+- HTTPS：`pending_validation`
+- 平台未返回配置错误。
 
-## 4. 线上路径
+下一次继续时，应先刷新 Sites 自定义域名状态，并从公网确认 DNS、HTTPS 和实际页面响应。不要仅凭 DNS 控制台已添加记录就宣布域名迁移完成。
 
-| 内容 | 路径 |
-|---|---|
-| 应用目录 | `/home/ubuntu/digital-products/store` |
-| 付费商品根目录 | `/home/ubuntu/digital-products` |
-| 环境变量 | `/etc/digital-shop.env` |
-| SQLite | `/home/ubuntu/digital-products/store/data/store.db` |
-| systemd 服务 | `/etc/systemd/system/digital-shop.service` |
-| Caddy 配置 | `/etc/caddy/Caddyfile` |
+## 6. 安全边界
 
-`products.json` 中的 `file` 是相对于 `PRODUCT_ROOT` 的路径。部署前必须逐一确认六个文件存在且名称匹配。
+- 真实密钥、后台密码、顾客邮箱、订单内容、数据库导出和付费商品不得进入 GitHub、聊天或本文档。
+- `.openai/hosting.json` 只保存 Sites 项目标识和逻辑绑定名，不保存运行密钥。
+- 付费商品只保存在 R2。
+- `APP_SECRET` 只保存在 Sites 加密环境。
+- 迁移 API 已从正式代码和生产部署中移除，不应重新加入。
+- GitHub 当前代码应保持为 Sites 架构，不再把腾讯云部署文件作为生产方案。
 
-## 5. 环境变量
+## 7. 待完成事项（按顺序）
 
-从 `.env.example` 复制配置结构。真实值只在服务器终端填写：
+1. 刷新并确认 `shop.liyw.top` 域名状态变为 `active`，HTTPS 证书有效。
+2. 通过正式域名复验首页、后台登录、Checkout 和 webhook。
+3. 使用一笔真实订单验证：付款成功、下载可用、次数限制、退款后撤权。
+4. 确认新站稳定后，清理腾讯云旧商店：
+   - 停止并禁用旧 `digital-shop` 服务；
+   - 删除旧站运行目录、SQLite、商品副本、环境变量文件、Caddy 中的 `shop.liyw.top` 配置及临时备份；
+   - 只清理数字商店相关内容，不影响同一服务器上的 Hermes Agent 或其他服务；
+   - 清理后复核磁盘空间和剩余监听端口。
+5. 在 Stripe 后台确认生产 webhook 连续返回 2xx。
+6. 更新本文档，将域名、真实付款验收和腾讯云清理状态改为完成。
 
-- `STRIPE_SECRET_KEY`
-- `STRIPE_WEBHOOK_SECRET`
-- `ADMIN_PASSWORD`
-- `DOWNLOAD_SIGNING_SECRET`
-- `BASE_URL`
-- `DATABASE_PATH`
-- `PRODUCT_ROOT`
-- 下载期限、次数和客服邮箱
+在第 1～3 步完成前，不建议向真实用户推广商店。
 
-`DOWNLOAD_SIGNING_SECRET` 应使用至少 32 个随机字符，与后台密码、Stripe 密钥互不相同。
+## 8. 后续维护
 
-## 6. Stripe webhook
+- 修改代码前先打开现有 Sites 项目，禁止重新创建同名项目。
+- 保留 `.openai/hosting.json`、D1 绑定 `DB` 和 R2 绑定 `BUCKET`。
+- 数据结构变化必须生成并检查新的 Drizzle migration。
+- 每次生产发布后检查 Sites 部署状态，并复验 Checkout 与 webhook。
+- Stripe 密钥、webhook secret、后台密码或下载签名密钥轮换时，应更新加密运行配置，不能提交到仓库。
+- 每次用户说“今天就到这”时，先询问是否更新交接文档并将代码推送 GitHub。
 
-线上 endpoint：
-
-```text
-https://shop.liyw.top/api/webhook
-```
-
-订阅事件：
-
-- `checkout.session.completed`
-- `checkout.session.async_payment_succeeded`
-- `checkout.session.async_payment_failed`
-- `charge.refunded`
-
-创建 endpoint 后，将 Stripe 提供的 `whsec_...` 写入服务器环境变量，不写入仓库。
-
-## 7. 部署与运维
-
-```bash
-cd /home/ubuntu/digital-products/store
-npm ci
-npm test
-
-sudo cp deploy/digital-shop.service /etc/systemd/system/digital-shop.service
-sudo systemctl daemon-reload
-sudo systemctl enable --now digital-shop
-
-sudo cp Caddyfile /etc/caddy/Caddyfile
-sudo caddy validate --config /etc/caddy/Caddyfile
-sudo systemctl reload caddy
-```
-
-检查：
-
-```bash
-sudo systemctl status digital-shop --no-pager
-sudo journalctl -u digital-shop --since "10 min ago" --no-pager
-curl -I https://shop.liyw.top
-```
-
-不要再使用 `node server.js &` 或 `killall node`。
-
-## 8. 上线验证清单
-
-1. 首页可打开，HTTPS 证书正常。
-2. 3000 端口只监听 `127.0.0.1`。
-3. 错误后台密码返回 401，正确密码可进入统计页。
-4. Stripe 测试付款产生一笔待支付→已支付订单。
-5. 伪造 webhook 返回 400，Stripe Dashboard 的真实 webhook 返回 200。
-6. 付款前无下载权限，付款后链接可用。
-7. 超过下载次数后链接拒绝访问。
-8. 重启 `digital-shop` 后原订单和下载权限仍存在。
-9. 退款后旧链接失效。
-10. GitHub 当前版本和历史中均无付费文件、密钥、密码和数据库。
-
-## 9. 数据备份
-
-至少每日备份：
-
-- `data/store.db`
-- 服务器非公开商品目录
-
-SQLite 使用 WAL 模式。在线备份应使用 SQLite 的备份命令或先短暂停止服务，不要只复制单个 `.db` 而忽略可能存在的 WAL 文件。
-
-## 10. 当前待完成
-
-- GitHub 仓库已设为私有，远端 `main` 已于 2026-07-27 用 v3 无父提交替换，当前分支历史不再包含旧版付费文件。
-- v3 已于 2026-07-27 部署到腾讯云 Lighthouse，`digital-shop` 已由 systemd 托管并设为开机自启，Node.js 只监听 `127.0.0.1:3000`，Caddy HTTPS 转发正常。
-- 旧站完整备份位于 `/home/ubuntu/digital-products/store-backup-before-v3`，切换前的旧运行目录位于 `/home/ubuntu/digital-products/store-legacy-before-v3-live`。
-- `/etc/digital-shop.env` 权限为 `600`；后台随机密码保存在服务器 root 专用文件 `/root/digital-shop-admin-password.txt`，不得写入仓库或聊天。
-- Stripe 生产 webhook 已创建并启用，订阅本文件第 6 节列出的 4 个事件；生产 Checkout 会话创建、后台登录校验、systemd 重启和 SQLite 订单持久化测试均已通过。
-- 当前部署临时沿用了旧版 Stripe Live Secret key。该密钥曾经公开，仍须在 Stripe Dashboard 中轮换；轮换后应立即更新 `/etc/digital-shop.env` 并重启、复核 `digital-shop`。
-- 真实付款、下载次数限制、退款撤权和重启后持久化仍需使用一笔实际订单完成端到端验收。
-- 旧 `tracking.json` 已随旧站目录保留；新版本不再依赖它。
